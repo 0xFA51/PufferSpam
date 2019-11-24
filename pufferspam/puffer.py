@@ -63,6 +63,8 @@ def main():
 
     SERVER = "smtp.gmail.com"
     PORT = 587
+    print(bold(blue("This program was created by " + __author__)))
+    print(bold(red("Do not use it for illegal purposes.")))
     account = input(green("Sender's email address (g-mail)") + blue(bold("> ")))
     alias = input(green("Nickname") + blue(bold("> ")))
     pw = getpass.getpass()
